@@ -1,6 +1,7 @@
 use alloy_primitives::hex::encode_prefixed;
 use alloy_primitives::Address;
 pub use alloy_primitives::U256;
+use alloy_signer::Signer;
 use alloy_signer_local::PrivateKeySigner;
 pub use anyhow::{anyhow, Context, Result as ClientResult};
 use config::get_contract_config;
@@ -23,7 +24,7 @@ mod headers;
 mod orders;
 mod utils;
 
-use crate::orders::SigType;
+pub use crate::orders::SigType;
 pub use data::*;
 pub use eth_utils::EthSigner;
 use headers::{create_l1_headers, create_l2_headers};
@@ -84,11 +85,17 @@ impl ClobClient {
     }
 
     pub fn set_order_builder_params(&mut self, sig_type: Option<SigType>, funder: Option<Address>) {
-        self.order_builder = Some(OrderBuilder::new(
-            self.signer.clone().expect("Signer is not set"),
-            sig_type,
-            funder,
-        ))
+        if sig_type.is_none() && funder.is_none() {
+            return;
+        }
+        if let Some(ref mut ob) = self.order_builder {
+            if let Some(sig_type) = sig_type {
+                ob.set_sig_type(sig_type);
+            }
+            if let Some(funder) = funder {
+                ob.set_funder(funder);
+            }
+        }
     }
 
     #[inline]
