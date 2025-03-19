@@ -671,7 +671,7 @@ impl ClobClient {
                 .http_client
                 .request(method.clone(), format!("{}{endpoint}", &self.host))
                 .query(&query_params)
-                .query(&["next_cursor", &next_cursor]);
+                .query(&[("next_cursor", &next_cursor)]);
 
             let r = headers
                 .clone()
