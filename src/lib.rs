@@ -1,4 +1,5 @@
 use alloy_primitives::hex::encode_prefixed;
+use alloy_primitives::Address;
 pub use alloy_primitives::U256;
 use alloy_signer_local::PrivateKeySigner;
 pub use anyhow::{anyhow, Context, Result as ClientResult};
@@ -12,7 +13,6 @@ use reqwest::RequestBuilder;
 use rust_decimal::Decimal;
 pub use serde_json::Value;
 use std::collections::HashMap;
-
 // #[cfg(test)]
 // mod tests;
 
@@ -23,6 +23,7 @@ mod headers;
 mod orders;
 mod utils;
 
+use crate::orders::SigType;
 pub use data::*;
 pub use eth_utils::EthSigner;
 use headers::{create_l1_headers, create_l2_headers};
@@ -80,6 +81,14 @@ impl ClobClient {
     }
     pub fn set_api_creds(&mut self, api_creds: ApiCreds) {
         self.api_creds = Some(api_creds);
+    }
+
+    pub fn set_order_builder_params(&mut self, sig_type: Option<SigType>, funder: Option<Address>) {
+        self.order_builder = Some(OrderBuilder::new(
+            self.signer.clone().expect("Signer is not set"),
+            sig_type,
+            funder,
+        ))
     }
 
     #[inline]
@@ -833,7 +842,10 @@ impl ClobClient {
             .await?)
     }
 
-    pub async fn get_sampling_markets(&self, next_cursor: Option<&str>) -> ClientResult<MarketsResponse> {
+    pub async fn get_sampling_markets(
+        &self,
+        next_cursor: Option<&str>,
+    ) -> ClientResult<MarketsResponse> {
         let next_cursor = next_cursor.unwrap_or(INITIAL_CURSOR);
 
         Ok(self
