@@ -302,7 +302,7 @@ impl OrderBuilder {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn build_signed_order(
+    pub fn build_signed_order(
         &self,
         token_id: String,
         side: Side,

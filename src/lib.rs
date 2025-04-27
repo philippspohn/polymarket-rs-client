@@ -36,7 +36,7 @@ pub struct ClobClient {
     signer: Option<Box<dyn EthSigner>>,
     chain_id: Option<u64>,
     api_creds: Option<ApiCreds>,
-    order_builder: Option<OrderBuilder>,
+    pub order_builder: Option<OrderBuilder>,
 }
 
 const INITIAL_CURSOR: &str = "MA==";
